@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile 'org.apache.logging.log4j:log4j-api:2.7'
+    compile 'org.apache.logging.log4j:log4j-core:2.7'
+    compile 'args4j:args4j:2.33'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+    compile 'org.slf4j:slf4j-log4j12:1.7.12'
+    compile 'org.projectlombok:lombok:1.16.10'
+    compile 'org.jetbrains:annotations:15.0'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.8.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.3'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.3'
+    testCompile 'junit:junit:4.12'
+}
+
+mainClassName = "ca.uwaterloo.stock_trends_analyzer.StockTrendsAnalyzer"
+
+task createStartScripts(type: CreateStartScripts) {
+    mainClassName = "ca.uwaterloo.stock_trends_analyzer.StockTrendsAnalyzer"
+    applicationName = 'StockTrendsAnalyzer'
+}
+
+task copyDepLib(type: Copy) {
+    into "build/lib"
+    from configurations.runtime
+}
+
+task copyAppLib(type: Copy) {
+    from 'build/libs'
+    into 'build/lib'
+}
+
+build.dependsOn([copyDepLib, copyAppLib])
