@@ -1,12 +1,14 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
 import ca.uwaterloo.stock_trends_analyzer.beans.AppConfig;
+import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
 import ca.uwaterloo.stock_trends_analyzer.exceptions.InternalAppError;
 import ca.uwaterloo.stock_trends_analyzer.exceptions.InvalidConfigurationError;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -15,19 +17,35 @@ import java.io.File;
 import java.io.IOException;
 
 @ToString
-@Getter
 public class Options
 {
+
     private static Options instance;
-    private AppConfig appConfig;
+    @Getter private AppConfig appConfig;
+    @Getter private DateTime startDate;
+    @Getter private DateTime endDate;
 
     private static Logger log = LogManager.getLogger(Options.class);
 
-    @Option(name = "-help", usage = "help", metaVar = "HELP")
+    @Option(name = "-help", usage = "help",
+            metaVar = "HELP")
     private Boolean help = false;
 
-    @Option(name = "-configFilePath", usage = "App Config file path", metaVar = "CONFIG_FILEPATH", required = true)
+    @Option(name = "-configFilePath", usage = "App Config file path",
+            metaVar = "CONFIG_FILEPATH", required = true)
     private String configFilePath;
+
+    @Option(name = "-symbolsFilePath", usage = "Stock symbols file path",
+            metaVar = "SYM_FILEPATH", required = true)
+    @Getter private String symbolsFilePath;
+
+    @Option(name = "-startDate", usage = "Stock history start date : YYYY-MM-DD",
+            metaVar = "START_DATE", required = true)
+    private String startDateString;
+
+    @Option(name = "-endDate", usage = "Stock history end date : YYYY-MM-DD",
+            metaVar = "END_DATE", required = true)
+    private String endDateString;
 
     public static void initializeInstance(String[] args)
         throws InvalidConfigurationError, IOException
@@ -65,15 +83,16 @@ public class Options
         }
         catch (CmdLineException e)
         {
-            log.error("CmdLineException while reading options", e);
-            throw new InvalidConfigurationError(
-                "CmdLineException while reading options", e
-            );
+            String msg = "CmdLineException while reading options ";
+            log.error(msg, e);
+            throw new InvalidConfigurationError(msg, e);
         }
 
-        log.debug("configFilePath: " + getConfigFilePath());
-        appConfig = Constants.MAPPER.readValue(new File(getConfigFilePath()), AppConfig.class);
-        log.debug("appConfig: " + appConfig);
+        log.debug("configFilePath: " + configFilePath);
+        appConfig = Constants.MAPPER.readValue(new File(configFilePath), AppConfig.class);
+
+        startDate = Constants.DATETIME_FORMATTER.parseDateTime(startDateString);
+        endDate = Constants.DATETIME_FORMATTER.parseDateTime(endDateString);
 
         log.info("Options successfully read");
     }
