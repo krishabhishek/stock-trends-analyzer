@@ -6,6 +6,10 @@ import org.joda.time.format.DateTimeFormatter;
 
 public class Constants
 {
+    static {
+        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
+    }
+
     public static final ObjectMapper MAPPER = new ObjectMapper();
     public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
     public static final String OUTPUT_FILE_PREFIX = "STOCK_HISTORY";

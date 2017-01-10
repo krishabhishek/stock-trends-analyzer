@@ -13,7 +13,8 @@ import java.util.stream.Stream;
 
 public class StockTrendsProcessor extends Processor
 {
-    private Logger log = LogManager.getLogger(StockTrendsAnalyzer.class);
+
+    private Logger log = LogManager.getLogger(getClass());
 
     @Override
     public void process()
@@ -26,6 +27,7 @@ public class StockTrendsProcessor extends Processor
             stream.forEach(
                 line ->
                 {
+                    log.info("Fetching stock history for company: " + line);
                     try
                     {
                         StockQueryHelper.getStockHistory(

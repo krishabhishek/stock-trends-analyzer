@@ -4,6 +4,7 @@ build/
 gradle/
 gradlew
 gradlew.bat
+.idea/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
