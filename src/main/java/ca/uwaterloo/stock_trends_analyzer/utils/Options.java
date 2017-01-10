@@ -47,6 +47,10 @@ public class Options
             metaVar = "END_DATE", required = true)
     private String endDateString;
 
+    @Option(name = "-outputDirectory", usage = "Output Directory",
+        metaVar = "OUTPUT_DIR", required = true)
+    @Getter private String outputDirectory;
+
     public static void initializeInstance(String[] args)
         throws InvalidConfigurationError, IOException
     {

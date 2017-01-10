@@ -6,6 +6,11 @@ import ca.uwaterloo.stock_trends_analyzer.utils.StockQueryHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
 public class StockTrendsProcessor extends Processor
 {
     private Logger log = LogManager.getLogger(StockTrendsAnalyzer.class);
@@ -16,16 +21,26 @@ public class StockTrendsProcessor extends Processor
     {
         log.info("StockTrendsProcessor begun");
 
-        StockQueryHelper.getStockHistory(
-            "GOOG",
-            Options.getInstance().getStartDate().getMonthOfYear() - 1,
-            Options.getInstance().getStartDate().getDayOfMonth(),
-            Options.getInstance().getStartDate().getYear(),
-            Options.getInstance().getEndDate().getMonthOfYear() - 1,
-            Options.getInstance().getEndDate().getDayOfMonth(),
-            Options.getInstance().getEndDate().getYear(),
-            "/home/v2john/"
-        );
+        Options options = Options.getInstance();
+        try (Stream<String> stream = Files.lines(Paths.get(options.getSymbolsFilePath()))) {
+            stream.forEach(
+                line ->
+                {
+                    try
+                    {
+                        StockQueryHelper.getStockHistory(
+                            line, options.getStartDate().getMonthOfYear() - 1,
+                            options.getStartDate().getDayOfMonth(), options.getStartDate().getYear(),
+                            options.getEndDate().getMonthOfYear() - 1, options.getEndDate().getDayOfMonth(),
+                            options.getEndDate().getYear(), options.getOutputDirectory());
+                    }
+                    catch (IOException e)
+                    {
+                        String msg = "IOException while reading symbols file";
+                        log.error(msg, e);
+                    }
+                });
+        }
 
         log.info("StockTrendsProcessor concluded");
     }
