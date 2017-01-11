@@ -16,40 +16,50 @@ import org.kohsuke.args4j.Option;
 import java.io.File;
 import java.io.IOException;
 
+@Getter
 @ToString
 public class Options
 {
-
     private static Options instance;
-    @Getter private AppConfig appConfig;
-    @Getter private DateTime startDate;
-    @Getter private DateTime endDate;
+    private AppConfig appConfig;
+    private DateTime startDate;
+    private DateTime endDate;
 
-    private static Logger log = LogManager.getLogger(Options.class);
+    private Logger log = LogManager.getLogger(getClass());
 
-    @Option(name = "-help", usage = "help",
+    @Option(name = "-help", usage = "Help",
             metaVar = "HELP")
     private Boolean help = false;
 
+    @Option(name = "-fetch", usage = "Run Mode: Fetch prices", metaVar = "FETCH")
+    private Boolean fetch = false;
+
+    @Option(name = "-analyze", usage = "Run Mode: Analyze stock price trends", metaVar = "ANALYZE")
+    private Boolean analyze = false;
+
     @Option(name = "-configFilePath", usage = "App Config file path",
-            metaVar = "CONFIG_FILEPATH", required = true)
+        metaVar = "CONFIG_FILEPATH", required = true)
     private String configFilePath;
 
     @Option(name = "-symbolsFilePath", usage = "Stock symbols file path",
-            metaVar = "SYM_FILEPATH", required = true)
-    @Getter private String symbolsFilePath;
+        metaVar = "SYM_FILEPATH")
+    private String symbolsFilePath;
 
     @Option(name = "-startDate", usage = "Stock history start date : YYYY-MM-DD",
-            metaVar = "START_DATE", required = true)
+        metaVar = "START_DATE")
     private String startDateString;
 
     @Option(name = "-endDate", usage = "Stock history end date : YYYY-MM-DD",
-            metaVar = "END_DATE", required = true)
+        metaVar = "END_DATE")
     private String endDateString;
 
     @Option(name = "-outputDirectory", usage = "Output Directory",
-        metaVar = "OUTPUT_DIR", required = true)
-    @Getter private String outputDirectory;
+        metaVar = "OUTPUT_DIR")
+    private String outputDirectory;
+
+    @Option(name = "-stockHistoryFilePath", usage = "Stock History File Path",
+        metaVar = "STOCK_HISTORY_FILE_PATH")
+    private String stockHistoryFilePath;
 
     public static void initializeInstance(String[] args)
         throws InvalidConfigurationError, IOException
@@ -83,20 +93,44 @@ public class Options
 
         try
         {
-            parser.parseArgument(args);
+                parser.parseArgument(args);
         }
         catch (CmdLineException e)
         {
             String msg = "CmdLineException while reading options ";
             log.error(msg, e);
-            throw new InvalidConfigurationError(msg, e);
         }
 
-        log.debug("configFilePath: " + configFilePath);
         appConfig = Constants.MAPPER.readValue(new File(configFilePath), AppConfig.class);
+        if (getFetch())
+        {
+            if (null == getSymbolsFilePath())
+            {
+                throw new InvalidConfigurationError("Missing argument -symbolsFilePath");
+            }
+            if (null == getStartDateString())
+            {
+                throw new InvalidConfigurationError("Missing argument -startDateString");
+            }
+            if (null == getEndDateString())
+            {
+                throw new InvalidConfigurationError("Missing argument -endDateString");
+            }
+            if (null == getOutputDirectory())
+            {
+                throw new InvalidConfigurationError("Missing argument -outputDirectory");
+            }
 
-        startDate = Constants.DATETIME_FORMATTER.parseDateTime(startDateString);
-        endDate = Constants.DATETIME_FORMATTER.parseDateTime(endDateString);
+            startDate = Constants.DATETIME_FORMATTER.parseDateTime(startDateString);
+            endDate = Constants.DATETIME_FORMATTER.parseDateTime(endDateString);
+        }
+        else if (getAnalyze())
+        {
+            if (null == getStockHistoryFilePath())
+            {
+                throw new InvalidConfigurationError("Missing argument -stockHistoryFilePath");
+            }
+        }
 
         log.info("Options successfully read");
     }
