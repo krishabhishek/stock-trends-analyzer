@@ -4,8 +4,10 @@ import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
 import ca.uwaterloo.stock_trends_analyzer.beans.StockPrice;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
+import ca.uwaterloo.stock_trends_analyzer.utils.NewsExtractor;
 import ca.uwaterloo.stock_trends_analyzer.utils.Options;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -24,13 +26,11 @@ public class StockAnalysisProcessor extends Processor
         log.info("StockAnalysisProcessor begun");
 
         Options options = Options.getInstance();
-
         CSVReader reader =
             new CSVReader(
                 new FileReader(options.getStockHistoryFilePath()), CSVParser.DEFAULT_SEPARATOR,
                 CSVParser.DEFAULT_QUOTE_CHARACTER, 1
             );
-
 
         List<String[]> dayStats = reader.readAll();
         List<StockPrice> stockPrices = new ArrayList<>();
@@ -39,59 +39,64 @@ public class StockAnalysisProcessor extends Processor
 
         for (String[] dayStat : dayStats)
         {
-            if (dayStat.length < 7)
+            if (dayStat.length < Constants.STOCKHISTORY_COLUMNS)
             {
                 continue;
             }
 
-            date = Constants.DATETIME_FORMATTER.parseDateTime(dayStat[0]);
-            closingPrice = Double.valueOf(dayStat[6]);
+            date = Constants.DATETIME_FORMATTER.parseDateTime(dayStat[Constants.DATETIME_INDEX]);
+            closingPrice = Double.valueOf(dayStat[Constants.CLOSING_PRICE_INDEX]);
 
             stockPrices.add(new StockPrice(date.getMillis(), closingPrice));
         }
 
-        identifyDownwardSpirals(stockPrices);
+        Pair<Map<Double, Long>, Map<Double, Long>> stockTrends = identifyDownwardSpirals(stockPrices);
+        List<String> badNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
+        List<String> goodNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
 
         log.info("StockAnalysisProcessor concluded");
     }
 
-    private void identifyDownwardSpirals(List<StockPrice> stockPrices)
+    private Pair<Map<Double, Long>, Map<Double, Long>> identifyDownwardSpirals(List<StockPrice> stockPrices)
     {
+        Map<Double, Long> declineStartInstants = new TreeMap<>();
+        Map<Double, Long> climbStartInstants = new TreeMap<>();
+
         Comparator<StockPrice> pricePointComparator = StockPrice.getPricePointComparator();
         Collections.sort(stockPrices, pricePointComparator);
-        Double worstHit = Double.MAX_VALUE;
-        DateTime startDate = null, endDate = null;
 
         for (int i = 0; i < stockPrices.size(); i++)
         {
-            DateTime endOfMonth = new DateTime(stockPrices.get(i).getTimestamp()).plusMonths(6);
+            DateTime endOfPeriod =
+                new DateTime(stockPrices.get(i).getTimestamp()).plusMonths(Constants.NUM_MONTHS_REGRESS);
 
             SimpleRegression regression = new SimpleRegression();
             for (int j = i; j < stockPrices.size(); j++)
             {
                 DateTime timestamp = new DateTime(stockPrices.get(j).getTimestamp());
-                if (timestamp.isAfter(endOfMonth))
+                if (timestamp.isAfter(endOfPeriod))
                 {
                     break;
                 }
                 regression.addData(stockPrices.get(j).getTimestamp(), stockPrices.get(j).getClosingPrice());
             }
 
-            if (regression.getN() < 100)
+            if (regression.getN() < Constants.MINIMUM_DATAPOINTS_REGRESSION)
             {
                 break;
             }
 
-            if (regression.getSlope() < worstHit)
+            if (regression.getSlope() < 0)
             {
-                worstHit = regression.getSlope();
-                startDate = new DateTime(stockPrices.get(i).getTimestamp());
-                endDate = new DateTime(stockPrices.get(i).getTimestamp()).plusMonths(6);
+                declineStartInstants.put(regression.getSlope(), stockPrices.get(i).getTimestamp());
+            }
+            else
+            {
+                climbStartInstants.put(regression.getSlope(), stockPrices.get(i).getTimestamp());
             }
         }
 
-        log.debug("Worst decline: " + worstHit);
-        log.debug("During " + startDate + " to " + endDate);
+        return new Pair<>(declineStartInstants, climbStartInstants);
     }
 }
 

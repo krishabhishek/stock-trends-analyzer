@@ -1,4 +1,4 @@
-package ca.uwaterloo;
+package ca.uwaterloo.stock_trends_analyzer;
 
 import ca.uwaterloo.stock_trends_analyzer.utils.StockQueryHelper;
 import org.junit.Test;

@@ -6,14 +6,24 @@ import org.joda.time.format.DateTimeFormatter;
 
 public class Constants
 {
+    // General
     static {
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
     }
-
     public static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
-    public static final String OUTPUT_FILE_PREFIX = "STOCK_HISTORY";
 
+    // File IO Semantics
+    public static final String OUTPUT_FILE_PREFIX = "STOCK_HISTORY";
+    public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
+    public static final Integer DATETIME_INDEX = 0;
+    public static final Integer CLOSING_PRICE_INDEX = 6;
+    public static final Integer STOCKHISTORY_COLUMNS = 7;
+
+    // Slope detection
+    public static final Integer NUM_MONTHS_REGRESS = 6;
+    public static final Integer MINIMUM_DATAPOINTS_REGRESSION = 50;
+
+    // Finance API call
     public static final String SYMBOL_PLACEHOLDER = "__SYMBOL_PLACEHOLDER__";
     public static final String START_MONTH_PLACEHOLDER = "__START_MONTH_PLACEHOLDER__";
     public static final String START_DAY_PLACEHOLDER = "__START_DAY_PLACEHOLDER__";
