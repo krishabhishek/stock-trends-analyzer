@@ -23,7 +23,7 @@ public class Constants
     public static final Integer NUM_MONTHS_REGRESS = 6;
     public static final Integer MINIMUM_DATAPOINTS_REGRESSION = 50;
 
-    // Finance API call
+    // Stock history API call
     public static final String SYMBOL_PLACEHOLDER = "__SYMBOL_PLACEHOLDER__";
     public static final String START_MONTH_PLACEHOLDER = "__START_MONTH_PLACEHOLDER__";
     public static final String START_DAY_PLACEHOLDER = "__START_DAY_PLACEHOLDER__";
@@ -47,4 +47,9 @@ public class Constants
         "&f=" +
         END_YEAR_PLACEHOLDER +
         "&g=d&ignore=.csv";
+
+    // Financial news APi
+    public static final String GUARDIAN_API_KEY = "f70ba1d2-355e-41a2-8ef9-7d74f7f88acd";
+    public static final String NEWS_ENDPOINT = "https://content.guardianapis.com/search";
+    public static final String DEFAULT_ENCODING = "UTF-8";
 }

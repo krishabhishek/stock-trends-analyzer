@@ -51,8 +51,8 @@ public class StockAnalysisProcessor extends Processor
         }
 
         Pair<Map<Double, Long>, Map<Double, Long>> stockTrends = identifyDownwardSpirals(stockPrices);
-        List<String> badNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
-        List<String> goodNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
+//        List<String> badNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
+//        List<String> goodNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
 
         log.info("StockAnalysisProcessor concluded");
     }
@@ -63,7 +63,7 @@ public class StockAnalysisProcessor extends Processor
         Map<Double, Long> climbStartInstants = new TreeMap<>();
 
         Comparator<StockPrice> pricePointComparator = StockPrice.getPricePointComparator();
-        Collections.sort(stockPrices, pricePointComparator);
+        stockPrices.sort(pricePointComparator);
 
         for (int i = 0; i < stockPrices.size(); i++)
         {
