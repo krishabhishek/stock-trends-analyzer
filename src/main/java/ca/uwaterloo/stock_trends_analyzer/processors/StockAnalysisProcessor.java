@@ -6,14 +6,17 @@ import ca.uwaterloo.stock_trends_analyzer.beans.StockPrice;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
 import ca.uwaterloo.stock_trends_analyzer.utils.NewsExtractor;
 import ca.uwaterloo.stock_trends_analyzer.utils.Options;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
+import ca.uwaterloo.stock_trends_analyzer.utils.StatisticalInferenceHelper;
+import ca.uwaterloo.stock_trends_analyzer.utils.StockQueryHelper;
 import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.io.FileReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
 public class StockAnalysisProcessor extends Processor
 {
@@ -50,53 +53,51 @@ public class StockAnalysisProcessor extends Processor
             stockPrices.add(new StockPrice(date.getMillis(), closingPrice));
         }
 
-        Pair<Map<Double, Long>, Map<Double, Long>> stockTrends = identifyDownwardSpirals(stockPrices);
-//        List<String> badNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
-//        List<String> goodNews = NewsExtractor.getHeadlines(stockTrends.getFirst());
+        Pair<TreeMap<Long, Double>, TreeMap<Long, Double>> stockTrends =
+            StatisticalInferenceHelper.identifyDownwardSpirals(stockPrices);
+
+        TreeMap<Long, Double> negativeTrends = stockTrends.getFirst();
+        TreeMap<Long, Double> positiveTrends = stockTrends.getSecond();
+
+        List<Long> negativeTrendStartInstants = new ArrayList<>(negativeTrends.keySet());
+        List<Long> positiveTrendStartInstants = new ArrayList<>(positiveTrends.keySet());
+
+        List<String> negativeNewsHeadlines = new ArrayList<>();
+        List<String> positiveNewsHeadlines = new ArrayList<>();
+
+        for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < negativeTrendStartInstants.size(); i++)
+        {
+            negativeNewsHeadlines.addAll(
+                NewsExtractor.getHeadlines(
+                    StockQueryHelper.getCompanyName(
+                        options.getStockHistoryFilePath(),
+                        options.getStockSymbolMappingFilePath()
+                    ),
+                    new DateTime(negativeTrendStartInstants.get(i)),
+                    new DateTime(negativeTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
+                    "business"
+                )
+            );
+        }
+
+        for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < positiveTrendStartInstants.size(); i++)
+        {
+            positiveNewsHeadlines.addAll(
+                NewsExtractor.getHeadlines(
+                    StockQueryHelper.getCompanyName(
+                        options.getStockHistoryFilePath(),
+                        options.getStockSymbolMappingFilePath()
+                    ),
+                    new DateTime(positiveTrendStartInstants.get(i)),
+                    new DateTime(positiveTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
+                    "business"
+                )
+            );
+        }
+
+        log.debug("Negative news: " + negativeNewsHeadlines);
+        log.debug("Positive news: " + positiveNewsHeadlines);
 
         log.info("StockAnalysisProcessor concluded");
     }
-
-    private Pair<Map<Double, Long>, Map<Double, Long>> identifyDownwardSpirals(List<StockPrice> stockPrices)
-    {
-        Map<Double, Long> declineStartInstants = new TreeMap<>();
-        Map<Double, Long> climbStartInstants = new TreeMap<>();
-
-        Comparator<StockPrice> pricePointComparator = StockPrice.getPricePointComparator();
-        stockPrices.sort(pricePointComparator);
-
-        for (int i = 0; i < stockPrices.size(); i++)
-        {
-            DateTime endOfPeriod =
-                new DateTime(stockPrices.get(i).getTimestamp()).plusMonths(Constants.NUM_MONTHS_REGRESS);
-
-            SimpleRegression regression = new SimpleRegression();
-            for (int j = i; j < stockPrices.size(); j++)
-            {
-                DateTime timestamp = new DateTime(stockPrices.get(j).getTimestamp());
-                if (timestamp.isAfter(endOfPeriod))
-                {
-                    break;
-                }
-                regression.addData(stockPrices.get(j).getTimestamp(), stockPrices.get(j).getClosingPrice());
-            }
-
-            if (regression.getN() < Constants.MINIMUM_DATAPOINTS_REGRESSION)
-            {
-                break;
-            }
-
-            if (regression.getSlope() < 0)
-            {
-                declineStartInstants.put(regression.getSlope(), stockPrices.get(i).getTimestamp());
-            }
-            else
-            {
-                climbStartInstants.put(regression.getSlope(), stockPrices.get(i).getTimestamp());
-            }
-        }
-
-        return new Pair<>(declineStartInstants, climbStartInstants);
-    }
 }
-

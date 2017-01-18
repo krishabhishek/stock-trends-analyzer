@@ -15,6 +15,7 @@ import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 @Getter
 @ToString
@@ -38,27 +39,31 @@ public class Options
     private Boolean analyze = false;
 
     @Option(name = "-configFilePath", usage = "App Config file path",
-        metaVar = "CONFIG_FILEPATH", required = true)
+            metaVar = "CONFIG_FILEPATH", required = true)
     private String configFilePath;
 
     @Option(name = "-symbolsFilePath", usage = "Stock symbols file path",
-        metaVar = "SYM_FILEPATH")
+            metaVar = "SYM_FILEPATH")
     private String symbolsFilePath;
 
     @Option(name = "-startDate", usage = "Stock history start date : YYYY-MM-DD",
-        metaVar = "START_DATE")
+            metaVar = "START_DATE")
     private String startDateString;
 
     @Option(name = "-endDate", usage = "Stock history end date : YYYY-MM-DD",
-        metaVar = "END_DATE")
+            metaVar = "END_DATE")
     private String endDateString;
 
     @Option(name = "-outputDirectory", usage = "Output Directory",
-        metaVar = "OUTPUT_DIR")
+            metaVar = "OUTPUT_DIR")
     private String outputDirectory;
 
+    @Option(name = "-stockSymbolMappingFilePath", usage = "Stock Symbol Mapping File Path",
+            metaVar = "STOCK_SYMBOL_MAPPING_FILE_PATH")
+    private String stockSymbolMappingFilePath;
+
     @Option(name = "-stockHistoryFilePath", usage = "Stock History File Path",
-        metaVar = "STOCK_HISTORY_FILE_PATH")
+            metaVar = "STOCK_HISTORY_FILE_PATH")
     private String stockHistoryFilePath;
 
     public static void initializeInstance(String[] args)
@@ -129,6 +134,10 @@ public class Options
             if (null == getStockHistoryFilePath())
             {
                 throw new InvalidConfigurationError("Missing argument -stockHistoryFilePath");
+            }
+            if (null == getStockSymbolMappingFilePath())
+            {
+                throw new InvalidConfigurationError("Missing argument -stockSymbolMappingFilePath");
             }
         }
 

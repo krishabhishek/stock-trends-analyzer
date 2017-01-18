@@ -21,11 +21,13 @@ import java.util.Map;
 
 public class NewsExtractor
 {
-    private Logger log = LogManager.getLogger(getClass());
+    private static Logger log = LogManager.getLogger(NewsExtractor.class);
 
-    public List<String> getHeadlines(String searchString, DateTime startDate, DateTime endDate, String section)
+    public static List<String> getHeadlines(String searchString, DateTime startDate, DateTime endDate, String section)
         throws InterruptedException, IOException, URISyntaxException
     {
+        log.debug("Search term is " + searchString);
+
         List<String> articleHeadlines = new ArrayList<>();
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -54,10 +56,12 @@ public class NewsExtractor
         }
         httpclient.close();
 
+        log.debug("Extracted " + articleHeadlines.size() + " articles.");
+
         return articleHeadlines;
     }
 
-    private List<String> parseHeadlinesFromAPIResponse(String apiResponseText)
+    private static List<String> parseHeadlinesFromAPIResponse(String apiResponseText)
         throws IOException
     {
         List<String> headlines = new ArrayList<>();

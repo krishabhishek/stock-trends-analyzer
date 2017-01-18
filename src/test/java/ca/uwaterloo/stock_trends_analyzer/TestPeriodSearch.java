@@ -17,7 +17,7 @@ public class TestPeriodSearch
     {
         NewsExtractor searchHelper = new NewsExtractor();
 
-        String organizationName = "BlackBerry";
+        String organizationName = "Apple Inc.";
         List<String> headlines =  searchHelper.getHeadlines(
             organizationName,
             Constants.DATETIME_FORMATTER.parseDateTime("2015-01-01"),
