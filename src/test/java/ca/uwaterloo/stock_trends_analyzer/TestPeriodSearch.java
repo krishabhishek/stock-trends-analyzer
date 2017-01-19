@@ -15,10 +15,8 @@ public class TestPeriodSearch
     public void testGetTopResult()
         throws InterruptedException, IOException, URISyntaxException
     {
-        NewsExtractor searchHelper = new NewsExtractor();
-
         String organizationName = "Apple Inc.";
-        List<String> headlines =  searchHelper.getHeadlines(
+        List<String> headlines =  NewsExtractor.getHeadlines(
             organizationName,
             Constants.DATETIME_FORMATTER.parseDateTime("2015-01-01"),
             Constants.DATETIME_FORMATTER.parseDateTime("2015-06-30"),
