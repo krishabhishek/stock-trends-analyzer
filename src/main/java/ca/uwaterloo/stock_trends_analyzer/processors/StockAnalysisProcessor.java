@@ -65,10 +65,12 @@ public class StockAnalysisProcessor extends Processor
         List<String> negativeNewsHeadlines = new ArrayList<>();
         List<String> positiveNewsHeadlines = new ArrayList<>();
 
+        NewsExtractor newsExtractor = new NewsExtractor();
+
         for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < negativeTrendStartInstants.size(); i++)
         {
             negativeNewsHeadlines.addAll(
-                NewsExtractor.getHeadlines(
+                newsExtractor.getHeadlines(
                     StockQueryHelper.getCompanyName(
                         options.getStockHistoryFilePath(),
                         options.getStockSymbolMappingFilePath()
@@ -83,7 +85,7 @@ public class StockAnalysisProcessor extends Processor
         for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < positiveTrendStartInstants.size(); i++)
         {
             positiveNewsHeadlines.addAll(
-                NewsExtractor.getHeadlines(
+                newsExtractor.getHeadlines(
                     StockQueryHelper.getCompanyName(
                         options.getStockHistoryFilePath(),
                         options.getStockSymbolMappingFilePath()
@@ -94,6 +96,8 @@ public class StockAnalysisProcessor extends Processor
                 )
             );
         }
+
+        newsExtractor.quitDriver();
 
         log.debug("Negative news: " + negativeNewsHeadlines);
         log.debug("Positive news: " + positiveNewsHeadlines);

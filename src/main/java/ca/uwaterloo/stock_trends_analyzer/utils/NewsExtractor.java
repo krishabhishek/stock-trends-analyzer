@@ -1,79 +1,62 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
-import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
-import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class NewsExtractor
 {
     private static Logger log = LogManager.getLogger(NewsExtractor.class);
 
-    public static List<String> getHeadlines(String searchString, DateTime startDate, DateTime endDate, String section)
-        throws InterruptedException, IOException, URISyntaxException
+    private static final String WEB_DRIVER_PROPERTY = "webdriver.chrome.driver";
+    private static final String CHROME_DRIVER_PATH = "/home/v2john/Tools/selenium/chromedriver";
+    private static final String SEARCH_ENGINE = "https://news.google.com/news/advanced_news_search";
+    private static final Long TIMEOUT_SECONDS = 10L;
+
+    private WebDriver driver = null;
+
+    public NewsExtractor()
     {
-        log.debug("Search term is " + searchString);
-
-        List<String> articleHeadlines = new ArrayList<>();
-
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-
-        URI uri =
-            new URIBuilder(Constants.NEWS_ENDPOINT)
-                .setParameter("api-key", Constants.GUARDIAN_API_KEY)
-                .setParameter("q", searchString)
-                .setParameter("from-date", startDate.toString(Constants.DATETIME_FORMATTER))
-                .setParameter("to-date", endDate.toString(Constants.DATETIME_FORMATTER))
-                .setParameter("page-size", "200")
-                .setParameter("section", section)
-                .build();
-
-        HttpGet httpget = new HttpGet(uri);
-        CloseableHttpResponse response = httpclient.execute(httpget);
-
-        if (null == response || null == response.getEntity())
-        {
-            log.error("No response from the Financial News API");
-        }
-        else
-        {
-            String responseText = IOUtils.toString(response.getEntity().getContent(), Constants.DEFAULT_ENCODING);
-            articleHeadlines = parseHeadlinesFromAPIResponse(responseText);
-        }
-        httpclient.close();
-
-        log.debug("Extracted " + articleHeadlines.size() + " articles.");
-
-        return articleHeadlines;
+        System.setProperty(WEB_DRIVER_PROPERTY, CHROME_DRIVER_PATH);
+        driver = new ChromeDriver();
     }
 
-    private static List<String> parseHeadlinesFromAPIResponse(String apiResponseText)
-        throws IOException
+    public void quitDriver()
     {
-        List<String> headlines = new ArrayList<>();
-        Map<String, Map<String, Object>> resultsMap =
-            Constants.MAPPER.readValue(apiResponseText, new TypeReference<Map<String, Map<String, Object>>>(){});
+        driver.quit();
+    }
 
-        List<Map<String, String>> newsArticles = (List<Map<String, String>>) resultsMap.get("response").get("results");
-        for (Map<String, String> article : newsArticles)
+    public List<String> getHeadlines(String searchString, DateTime startTime, DateTime endTime, String section)
+        throws InterruptedException
+    {
+        List<String> articleHeadlines = new ArrayList<>();
+
+        try
         {
-            headlines.add(article.get("webTitle"));
+            driver.get(SEARCH_ENGINE);
+
+            WebElement keywordBox =
+                new WebDriverWait(driver, TIMEOUT_SECONDS).
+                    until(ExpectedConditions.presenceOfElementLocated(By.id("all-keyword-input")));
+
+            keywordBox.sendKeys(searchString);
+
+        }
+        catch (Exception e)
+        {
+            log.error("Exception while processing URL extractor for string " + searchString);
+            log.error(e);
         }
 
-        return headlines;
+        return articleHeadlines;
     }
 }

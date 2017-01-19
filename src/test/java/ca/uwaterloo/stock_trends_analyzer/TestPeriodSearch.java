@@ -16,12 +16,16 @@ public class TestPeriodSearch
         throws InterruptedException, IOException, URISyntaxException
     {
         String organizationName = "Apple Inc.";
-        List<String> headlines =  NewsExtractor.getHeadlines(
+
+        NewsExtractor newsExtractor = new NewsExtractor();
+        List<String> headlines =  newsExtractor.getHeadlines(
             organizationName,
             Constants.DATETIME_FORMATTER.parseDateTime("2015-01-01"),
             Constants.DATETIME_FORMATTER.parseDateTime("2015-06-30"),
             "technology"
         );
+
+//        newsExtractor.quitDriver();
 
         System.out.println(headlines);
     }
