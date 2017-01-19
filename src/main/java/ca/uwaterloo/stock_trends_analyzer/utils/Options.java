@@ -66,6 +66,10 @@ public class Options
             metaVar = "STOCK_HISTORY_FILE_PATH")
     private String stockHistoryFilePath;
 
+    @Option(name = "-outputFile", usage = "Output File",
+            metaVar = "OUTPUT_FILE")
+    private String outputFile;
+
     public static void initializeInstance(String[] args)
         throws InvalidConfigurationError, IOException
     {
@@ -98,12 +102,13 @@ public class Options
 
         try
         {
-                parser.parseArgument(args);
+            parser.parseArgument(args);
         }
         catch (CmdLineException e)
         {
             String msg = "CmdLineException while reading options ";
             log.error(msg, e);
+            throw new InvalidConfigurationError(e);
         }
 
         appConfig = Constants.MAPPER.readValue(new File(configFilePath), AppConfig.class);
@@ -138,6 +143,10 @@ public class Options
             if (null == getStockSymbolMappingFilePath())
             {
                 throw new InvalidConfigurationError("Missing argument -stockSymbolMappingFilePath");
+            }
+            if (null == getOutputFile())
+            {
+                throw new InvalidConfigurationError("Missing argument -outputFile");
             }
         }
 
