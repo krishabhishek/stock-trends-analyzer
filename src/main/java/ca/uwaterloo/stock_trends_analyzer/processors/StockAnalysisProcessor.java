@@ -69,32 +69,32 @@ public class StockAnalysisProcessor extends Processor
 
         for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < negativeTrendStartInstants.size(); i++)
         {
-            negativeNewsHeadlines.addAll(
-                newsExtractor.getHeadlines(
-                    StockQueryHelper.getCompanyName(
-                        options.getStockHistoryFilePath(),
-                        options.getStockSymbolMappingFilePath()
-                    ),
-                    new DateTime(negativeTrendStartInstants.get(i)),
-                    new DateTime(negativeTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
-                    "business"
-                )
-            );
+//            negativeNewsHeadlines.addAll(
+//                newsExtractor.getHeadlines(
+//                    StockQueryHelper.getCompanyName(
+//                        options.getStockHistoryFilePath(),
+//                        options.getStockSymbolMappingFilePath()
+//                    ),
+//                    new DateTime(negativeTrendStartInstants.get(i)),
+//                    new DateTime(negativeTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
+//                    "business"
+//                )
+//            );
         }
 
         for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < positiveTrendStartInstants.size(); i++)
         {
-            positiveNewsHeadlines.addAll(
-                newsExtractor.getHeadlines(
-                    StockQueryHelper.getCompanyName(
-                        options.getStockHistoryFilePath(),
-                        options.getStockSymbolMappingFilePath()
-                    ),
-                    new DateTime(positiveTrendStartInstants.get(i)),
-                    new DateTime(positiveTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
-                    "business"
-                )
-            );
+//            positiveNewsHeadlines.addAll(
+//                newsExtractor.getHeadlines(
+//                    StockQueryHelper.getCompanyName(
+//                        options.getStockHistoryFilePath(),
+//                        options.getStockSymbolMappingFilePath()
+//                    ),
+//                    new DateTime(positiveTrendStartInstants.get(i)),
+//                    new DateTime(positiveTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
+//                    "business"
+//                )
+//            );
         }
 
         newsExtractor.quitDriver();

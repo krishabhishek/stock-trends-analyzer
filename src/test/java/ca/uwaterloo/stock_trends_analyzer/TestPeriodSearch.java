@@ -22,11 +22,11 @@ public class TestPeriodSearch
             organizationName,
             Constants.DATETIME_FORMATTER.parseDateTime("2015-01-01"),
             Constants.DATETIME_FORMATTER.parseDateTime("2015-06-30"),
-            "technology"
+            3
         );
 
 //        newsExtractor.quitDriver();
 
-        System.out.println(headlines);
+        System.out.println(Constants.MAPPER.writeValueAsString(headlines));
     }
 }
