@@ -31,6 +31,7 @@ public class NewsExtractor
     public NewsExtractor()
     {
         System.setProperty(WEB_DRIVER_PROPERTY, CHROME_DRIVER_PATH);
+
         driver = new ChromeDriver();
     }
 
@@ -53,35 +54,49 @@ public class NewsExtractor
                     until(ExpectedConditions.presenceOfElementLocated(By.id("all-keyword-input")));
             keywordBox.sendKeys(searchString);
 
+            Thread.sleep(1000);
+
             WebElement occurrence_selector =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
                     until(ExpectedConditions.presenceOfElementLocated(By.id("position-filter-select")));
             occurrence_selector.click();
+
+            Thread.sleep(500);
 
             WebElement headline_selector =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
                     until(ExpectedConditions.presenceOfElementLocated(By.id(":3")));
             headline_selector.click();
 
+            Thread.sleep(1000);
+
             WebElement date_range_selector =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
                     until(ExpectedConditions.presenceOfElementLocated(By.id("date-filter-select")));
             date_range_selector.click();
+
+            Thread.sleep(500);
 
             WebElement custom_range_selector =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
                     until(ExpectedConditions.presenceOfElementLocated(By.id(":e")));
             custom_range_selector.click();
 
+            Thread.sleep(1000);
+
             WebElement startDateBox =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
                     until(ExpectedConditions.presenceOfElementLocated(By.id("ansp_start-date")));
             startDateBox.sendKeys(GOOGLE_FORMATTER.print(startTime));
 
+            Thread.sleep(500);
+
             WebElement endDateBox =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
                     until(ExpectedConditions.presenceOfElementLocated(By.id("ansp_end-date")));
             endDateBox.sendKeys(GOOGLE_FORMATTER.print(endTime));
+
+            Thread.sleep(500);
 
             WebElement searchButton =
                 new WebDriverWait(driver, TIMEOUT_SECONDS).
@@ -94,39 +109,65 @@ public class NewsExtractor
 
                 List<WebElement> headlineElements = new ArrayList<>();
 
-                List<WebElement> largeHeadlineElements =
-                    new WebDriverWait(driver, TIMEOUT_SECONDS).
-                        until(ExpectedConditions.presenceOfAllElementsLocatedBy(
-                            By.cssSelector(".l._HId"))
-                        );
-                headlineElements.addAll(largeHeadlineElements);
+                Thread.sleep(3000);
+                try
+                {
+                    List<WebElement> largeHeadlineElements =
+                        new WebDriverWait(driver, TIMEOUT_SECONDS).
+                            until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                                By.cssSelector(".l._HId"))
+                            );
+                    headlineElements.addAll(largeHeadlineElements);
+                }
+                catch (Exception e)
+                {
+                    log.error("Failed for large elements ", e);
+                }
 
-                List<WebElement> smallHeadlineElements =
-                    new WebDriverWait(driver, TIMEOUT_SECONDS).
-                        until(ExpectedConditions.presenceOfAllElementsLocatedBy(
-                            By.cssSelector("._sQb"))
-                        );
-                headlineElements.addAll(smallHeadlineElements);
+                try
+                {
+                    List<WebElement> smallHeadlineElements =
+                        new WebDriverWait(driver, TIMEOUT_SECONDS).
+                            until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                                By.cssSelector("._sQb"))
+                            );
+                    headlineElements.addAll(smallHeadlineElements);
+                }
+                catch (Exception e)
+                {
+                    log.error("Failed for small elements", e);
+                }
 
                 for (WebElement element : headlineElements)
                 {
-                    if(StringUtils.isBlank(element.getText()) || element.getText().contains("..."))
-                        continue;
+                    try
+                    {
+                        String headline = element.getText();
 
-                    articleHeadlines.add(element.getText());
+                        if(StringUtils.isBlank(headline) || headline.contains("..."))
+                            continue;
+
+                        articleHeadlines.add(headline);
+                    } catch (Exception e)
+                    {
+                        log.error("Element add error", e);
+                    }
                 }
 
-                WebElement nextPageButton =
-                    new WebDriverWait(driver, TIMEOUT_SECONDS).
-                        until(ExpectedConditions.presenceOfElementLocated(By.id("pnnext")));
-                nextPageButton.click();
+                try
+                {
+                    WebElement nextPageButton =
+                        new WebDriverWait(driver, TIMEOUT_SECONDS).
+                            until(ExpectedConditions.presenceOfElementLocated(By.id("pnnext")));
+                    nextPageButton.click();
+                }
+                catch (Exception e)
+                {
+                    log.error("Failed to trace the page next button", e);
+                }
 
                 --pagesToExplore;
             }
-
-//            document.getElementsByClassName("l _HId")
-//            document.getElementsByClassName("_sQb")
-//            next page button id : pnnext
         }
         catch (Exception e)
         {

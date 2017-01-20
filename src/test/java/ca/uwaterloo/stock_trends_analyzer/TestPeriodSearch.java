@@ -22,7 +22,7 @@ public class TestPeriodSearch
             organizationName,
             Constants.DATETIME_FORMATTER.parseDateTime("2015-01-01"),
             Constants.DATETIME_FORMATTER.parseDateTime("2015-06-30"),
-            3
+            5
         );
 
 //        newsExtractor.quitDriver();
