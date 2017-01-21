@@ -19,17 +19,7 @@ public class StockPrice
 
     public static Comparator<StockPrice> getPricePointComparator()
     {
-        return new Comparator()
-        {
-            @Override
-            public int compare(Object o1, Object o2)
-            {
-                StockPrice p1 = (StockPrice) o1;
-                StockPrice p2 = (StockPrice) o2;
-
-                return p1.getTimestamp().compareTo(p2.getTimestamp());
-            }
-        };
+        return Comparator.comparing(StockPrice::getTimestamp);
     }
 
     @Override
