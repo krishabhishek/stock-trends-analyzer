@@ -4,19 +4,15 @@ import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
 import ca.uwaterloo.stock_trends_analyzer.beans.StockPrice;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
-import ca.uwaterloo.stock_trends_analyzer.utils.NewsExtractor;
-import ca.uwaterloo.stock_trends_analyzer.utils.Options;
-import ca.uwaterloo.stock_trends_analyzer.utils.StatisticalInferenceHelper;
-import ca.uwaterloo.stock_trends_analyzer.utils.StockQueryHelper;
+import ca.uwaterloo.stock_trends_analyzer.utils.*;
 import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 public class StockAnalysisProcessor extends Processor
 {
@@ -69,38 +65,47 @@ public class StockAnalysisProcessor extends Processor
 
         for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < negativeTrendStartInstants.size(); i++)
         {
-//            negativeNewsHeadlines.addAll(
-//                newsExtractor.getHeadlines(
-//                    StockQueryHelper.getCompanyName(
-//                        options.getStockHistoryFilePath(),
-//                        options.getStockSymbolMappingFilePath()
-//                    ),
-//                    new DateTime(negativeTrendStartInstants.get(i)),
-//                    new DateTime(negativeTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
-//                    "business"
-//                )
-//            );
+            negativeNewsHeadlines.addAll(
+                newsExtractor.getHeadlines(
+                    StockQueryHelper.getCompanyName(
+                        options.getStockHistoryFilePath(),
+                        options.getStockSymbolMappingFilePath()
+                    ),
+                    new DateTime(negativeTrendStartInstants.get(i)),
+                    new DateTime(negativeTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
+                    1
+                )
+            );
         }
+
+        String companyName = StockQueryHelper.getCompanyName(
+                options.getStockHistoryFilePath(),
+                options.getStockSymbolMappingFilePath()
+        );
 
         for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < positiveTrendStartInstants.size(); i++)
         {
-//            positiveNewsHeadlines.addAll(
-//                newsExtractor.getHeadlines(
-//                    StockQueryHelper.getCompanyName(
-//                        options.getStockHistoryFilePath(),
-//                        options.getStockSymbolMappingFilePath()
-//                    ),
-//                    new DateTime(positiveTrendStartInstants.get(i)),
-//                    new DateTime(positiveTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
-//                    "business"
-//                )
-//            );
+            positiveNewsHeadlines.addAll(
+                newsExtractor.getHeadlines(
+                    StockQueryHelper.getCompanyName(
+                        options.getStockHistoryFilePath(),
+                        options.getStockSymbolMappingFilePath()
+                    ),
+                    new DateTime(positiveTrendStartInstants.get(i)),
+                    new DateTime(positiveTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
+                    1
+                )
+            );
         }
 
         newsExtractor.quitDriver();
 
-        log.debug("Negative news: " + negativeNewsHeadlines);
-        log.debug("Positive news: " + positiveNewsHeadlines);
+        Map<String, List<String>> labeledSentences = new HashMap<>();
+        labeledSentences.put("positive", positiveNewsHeadlines);
+        labeledSentences.put("negative", negativeNewsHeadlines);
+
+        log.info("Writing news to file");
+        FileHelper.writeNewsToFile(companyName, new File(options.getOutputFile()), labeledSentences);
 
         log.info("StockAnalysisProcessor concluded");
     }
