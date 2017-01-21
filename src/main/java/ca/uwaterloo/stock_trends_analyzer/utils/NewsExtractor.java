@@ -106,8 +106,6 @@ public class NewsExtractor
 
             while (pagesToExplore > 0)
             {
-                log.info(pagesToExplore + " pages left to explore");
-
                 List<WebElement> headlineElements = new ArrayList<>();
 
                 Thread.sleep(ThreadLocalRandom.current().nextInt(2000, 4000));

@@ -70,6 +70,10 @@ public class Options
             metaVar = "OUTPUT_FILE")
     private String outputFile;
 
+    @Option(name = "-numberOfPagesToParse", usage = "Pages to Parse",
+            metaVar = "PAGES_TO_PARSE")
+    private Integer numberOfPagesToParse = Constants.DEFAULT_NUM_PAGES_PARSED;
+
     public static void initializeInstance(String[] args)
         throws InvalidConfigurationError, IOException
     {

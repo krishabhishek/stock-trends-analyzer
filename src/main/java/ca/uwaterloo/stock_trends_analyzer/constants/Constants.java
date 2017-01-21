@@ -11,6 +11,7 @@ public class Constants
         System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
     }
     public static final ObjectMapper MAPPER = new ObjectMapper();
+    public static final Integer DEFAULT_NUM_PAGES_PARSED = 1;
 
     // File IO Semantics
     public static final String STOCKHISTORY_FILE_PREFIX = "STOCK_HISTORY_";
