@@ -15,7 +15,6 @@ import org.kohsuke.args4j.Option;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 @Getter
 @ToString

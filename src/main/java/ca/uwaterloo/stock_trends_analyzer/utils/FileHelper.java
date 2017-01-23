@@ -4,12 +4,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class FileHelper
 {
-    public static void writeNewsToFile(String companyName, File outputFile, Map<String, List<String>> labeledSentences)
+    public static void writeNewsToFile(String companyName, File outputFile, Map<String, Set<String>> labeledSentences)
         throws IOException
     {
         if (!outputFile.exists()) {
@@ -21,7 +21,7 @@ public class FileHelper
 
         for (String label : labeledSentences.keySet())
         {
-            List<String> sentences = labeledSentences.get(label);
+            Set<String> sentences = labeledSentences.get(label);
             for (String sentence : sentences)
             {
                 bufferedWriter.write(label + ":" + companyName + ":" + sentence +"\n");

@@ -1,0 +1,14 @@
+{
+  "queryString": "title:'__ORG_PLACEHOLDER__' lastPublishDateTime:>__START_DATE_PLACEHOLDER__ lastPublishDateTime:<__END_DATE_PLACEHOLDER__",
+  "queryContext": {
+    "curations": [
+      "ARTICLES"
+    ]
+  },
+  "resultContext": {
+    "aspects": [
+      "title",
+      "lifecycle"
+    ]
+  }
+}

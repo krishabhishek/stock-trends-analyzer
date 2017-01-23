@@ -1,79 +1,106 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
+import ca.uwaterloo.stock_trends_analyzer.exceptions.InternalAppError;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import com.squareup.okhttp.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.util.*;
 
 public class NewsExtractor
 {
     private static Logger log = LogManager.getLogger(NewsExtractor.class);
 
-    public static List<String> getHeadlines(String searchString, DateTime startDate, DateTime endDate, String section)
-        throws InterruptedException, IOException, URISyntaxException
+    public static Set<String> getHeadlines(
+        String companyName, DateTime startDate, DateTime endDate, String queryFilePath
+    )
+        throws InterruptedException, IOException, URISyntaxException, InternalAppError
     {
-        log.debug("Search term is " + searchString);
-
-        List<String> articleHeadlines = new ArrayList<>();
-
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+        Set<String> articleHeadlines = new HashSet<>();
 
         URI uri =
             new URIBuilder(Constants.NEWS_ENDPOINT)
-                .setParameter("api-key", Constants.GUARDIAN_API_KEY)
-                .setParameter("q", searchString)
-                .setParameter("from-date", startDate.toString(Constants.DATETIME_FORMATTER))
-                .setParameter("to-date", endDate.toString(Constants.DATETIME_FORMATTER))
-                .setParameter("page-size", "200")
-                .setParameter("section", section)
+                .setParameter("apiKey", Constants.FT_API_KEY)
                 .build();
 
-        HttpGet httpget = new HttpGet(uri);
-        CloseableHttpResponse response = httpclient.execute(httpget);
+        OkHttpClient client = new OkHttpClient();
 
-        if (null == response || null == response.getEntity())
-        {
-            log.error("No response from the Financial News API");
-        }
-        else
-        {
-            String responseText = IOUtils.toString(response.getEntity().getContent(), Constants.DEFAULT_ENCODING);
-            articleHeadlines = parseHeadlinesFromAPIResponse(responseText);
-        }
-        httpclient.close();
+        MediaType mediaType = MediaType.parse("application/json");
+        String payload = buildPayload(companyName, startDate, endDate, queryFilePath);
+
+        RequestBody body = RequestBody.create(mediaType, payload);
+        Request request = new Request.Builder()
+            .url(uri.toString())
+            .post(body)
+            .addHeader("content-type", "application/json")
+            .build();
+
+        Thread.sleep(5000); // Rate-limiting
+        Response response = client.newCall(request).execute();
+        String queryResult = response.body().string();
+
+        extractHeadlinesFromResult(queryResult, articleHeadlines);
 
         log.debug("Extracted " + articleHeadlines.size() + " articles.");
 
         return articleHeadlines;
     }
 
-    private static List<String> parseHeadlinesFromAPIResponse(String apiResponseText)
-        throws IOException
+    private static void extractHeadlinesFromResult(String queryResult, Set<String> articleHeadlines)
     {
-        List<String> headlines = new ArrayList<>();
-        Map<String, Map<String, Object>> resultsMap =
-            Constants.MAPPER.readValue(apiResponseText, new TypeReference<Map<String, Map<String, Object>>>(){});
-
-        List<Map<String, String>> newsArticles = (List<Map<String, String>>) resultsMap.get("response").get("results");
-        for (Map<String, String> article : newsArticles)
+        Map<String, Object> responseMap = null;
+        try
         {
-            headlines.add(article.get("webTitle"));
-        }
+            responseMap = Constants.MAPPER.readValue(queryResult, new TypeReference<Map<String, Object>>(){});
 
-        return headlines;
+            List<Map<String, Object>> outerResults = (List<Map<String, Object>>) responseMap.get("results");
+            if (null == outerResults || outerResults.isEmpty())
+            {
+                return;
+            }
+
+            List<Map<String, Object>> innerResults = (List<Map<String, Object>>) outerResults.get(0).get("results");
+            if (null == innerResults || innerResults.isEmpty())
+            {
+                return;
+            }
+
+            String title = null;
+            for (Map<String, Object> result : innerResults)
+            {
+                Map<String, String> resultTitle = (Map<String, String>) result.get("title");
+                title = resultTitle.get("title");
+                articleHeadlines.add(title);
+            }
+        }
+        catch (IOException e)
+        {
+            log.error("Skipping due to error while parsing json");
+        }
+    }
+
+    private static String buildPayload(String companyName, DateTime startDate, DateTime endDate,
+                                       String queryTemplatePath)
+        throws InternalAppError, IOException
+    {
+        String queryString = FileUtils.readFileToString(new File(queryTemplatePath), Charset.defaultCharset());
+
+        StrBuilder strBuilder = new StrBuilder(queryString);
+        strBuilder.replaceAll(Constants.ORG_PLACEHOLDER, companyName);
+        strBuilder.replaceAll(Constants.STARTDATE_PLACEHOLDER, Constants.FT_DATETIME_FORMATTER.print(startDate));
+        strBuilder.replaceAll(Constants.ENDDATE_PLACEHOLDER, Constants.FT_DATETIME_FORMATTER.print(endDate));
+
+        return strBuilder.toString();
     }
 }

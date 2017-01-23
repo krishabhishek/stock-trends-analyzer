@@ -39,11 +39,11 @@ public class StatisticalInferenceHelper
                 break;
             }
 
-            if (regression.getSlope() < -1 * Constants.SLOPE_THRESHOLD)
+            if (regression.getSlope() < 0)
             {
                 declineStartInstants.put(stockPrices.get(i).getTimestamp(), regression.getSlope());
             }
-            else if (regression.getSlope() > Constants.SLOPE_THRESHOLD)
+            else
             {
                 climbStartInstants.put(stockPrices.get(i).getTimestamp(), regression.getSlope());
             }

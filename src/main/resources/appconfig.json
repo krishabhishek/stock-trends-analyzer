@@ -1,3 +1,4 @@
 {
-    "appName": "StockTrendsAnalyzer"
+    "appName": "StockTrendsAnalyzer",
+    "queryFilePath": "/home/v2john/Projects/stock-trends-analyzer/src/main/resources/ft_query.json"
 }
