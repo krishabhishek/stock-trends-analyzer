@@ -13,6 +13,6 @@ Text file containing stock symbols for each organization
 
 ### Analyzing a single organizations history
 ```
-./build/scripts/stock-trends-analyzer -analyze -configFilePath ./src/main/resources/appconfig.json -stockHistoryFilePath ./stock_history.csv
+./build/scripts/stock-trends-analyzer -analyze -configFilePath ./src/main/resources/appconfig.json -stockHistoryFilePath ./
 ```
 
