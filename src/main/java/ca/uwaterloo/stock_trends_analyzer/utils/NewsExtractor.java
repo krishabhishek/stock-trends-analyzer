@@ -32,7 +32,6 @@ public class NewsExtractor
     public NewsExtractor()
     {
         System.setProperty(WEB_DRIVER_PROPERTY, CHROME_DRIVER_PATH);
-
         driver = new ChromeDriver();
     }
 
@@ -45,6 +44,8 @@ public class NewsExtractor
         throws InterruptedException
     {
         List<String> articleHeadlines = new ArrayList<>();
+
+        Thread.sleep(ThreadLocalRandom.current().nextInt(180000, 300000));
 
         try
         {
