@@ -24,7 +24,7 @@ public class Constants
     public static final Integer NUM_MONTHS_REGRESS = 6;
     public static final Integer MINIMUM_DATAPOINTS_REGRESSION = 50;
     public static final Double SLOPE_THRESHOLD = Math.pow(10, -50.0);
-    public static final Integer TIME_PERIODS_TO_CONSIDER = 2;
+    public static final Integer TIME_PERIODS_TO_CONSIDER = 1;
 
     // Stock history API call
     public static final String SYMBOL_PLACEHOLDER = "__SYMBOL_PLACEHOLDER__";
