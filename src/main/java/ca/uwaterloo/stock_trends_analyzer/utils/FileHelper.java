@@ -1,10 +1,12 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
+import ca.uwaterloo.stock_trends_analyzer.beans.LabeledHeadline;
+import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +27,9 @@ public class FileHelper
             List<String> sentences = labeledSentences.get(label);
             for (String sentence : sentences)
             {
-                bufferedWriter.write(label + ":" + companyName + ":" + sentence +"\n");
+                LabeledHeadline labeledHeadline = new LabeledHeadline(label, companyName, sentence);
+                bufferedWriter.write(Constants.MAPPER.writeValueAsString(labeledHeadline));
+                bufferedWriter.newLine();
             }
         }
 
