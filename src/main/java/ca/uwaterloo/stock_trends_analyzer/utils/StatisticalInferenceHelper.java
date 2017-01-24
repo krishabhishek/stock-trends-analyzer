@@ -27,7 +27,7 @@ public class StatisticalInferenceHelper
             for (int j = i; j < stockPrices.size(); j++)
             {
                 DateTime timestamp = new DateTime(stockPrices.get(j).getTimestamp());
-                if (timestamp.isAfter(endOfPeriod))
+                if (timestamp.isAfter(endOfPeriod) && endOfPeriod.isAfter(DateTime.now()))
                 {
                     break;
                 }

@@ -24,7 +24,7 @@ public class NewsExtractor
     private static final String WEB_DRIVER_PROPERTY = "webdriver.chrome.driver";
     private static final String CHROME_DRIVER_PATH = "/home/v2john/Tools/chromedriver";
     private static final String SEARCH_ENGINE = "https://news.google.com/news/advanced_news_search";
-    private static final Long TIMEOUT_SECONDS = 60L;
+    private static final Long TIMEOUT_SECONDS = 10L;
     private static final DateTimeFormatter GOOGLE_FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
 
     private WebDriver driver = null;
