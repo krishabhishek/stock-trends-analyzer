@@ -1,5 +1,6 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
+import ca.uwaterloo.stock_trends_analyzer.exceptions.InternalAppError;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +23,6 @@ public class NewsExtractor
     private static Logger log = LogManager.getLogger(NewsExtractor.class);
 
     private static final String WEB_DRIVER_PROPERTY = "webdriver.chrome.driver";
-    private static final String CHROME_DRIVER_PATH = "/home/v2john/Tools/chromedriver";
     private static final String SEARCH_ENGINE = "https://news.google.com/news/advanced_news_search";
     private static final Long TIMEOUT_SECONDS = 10L;
     private static final DateTimeFormatter GOOGLE_FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
@@ -30,8 +30,9 @@ public class NewsExtractor
     private WebDriver driver = null;
 
     public NewsExtractor()
+        throws InternalAppError
     {
-        System.setProperty(WEB_DRIVER_PROPERTY, CHROME_DRIVER_PATH);
+        System.setProperty(WEB_DRIVER_PROPERTY, Options.getInstance().getAppConfig().getChromeDriverPath());
         driver = new ChromeDriver();
     }
 
@@ -144,11 +145,13 @@ public class NewsExtractor
                     {
                         String headline = element.getText();
 
-                        if(StringUtils.isBlank(headline) || headline.contains("..."))
+                        if(StringUtils.isBlank(headline) || headline.contains("...") ||
+                            !headline.contains(searchString))
                             continue;
 
                         articleHeadlines.add(headline);
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         log.error("Element add error", e);
                     }

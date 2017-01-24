@@ -12,4 +12,5 @@ import lombok.*;
 public class AppConfig
 {
     private String appName;
+    private String chromeDriverPath;
 }
