@@ -43,7 +43,7 @@ public class StockAnalysisProcessor extends Processor
                 processCompany(stockHistoryFile.getAbsolutePath(), newsExtractor);
             }
         }
-        newsExtractor.quitDriver();
+        newsExtractor.quitDriver(); 
     }
 
     private void processCompany(String companyStockHistoryFilePath, NewsExtractor newsExtractor)
@@ -71,15 +71,22 @@ public class StockAnalysisProcessor extends Processor
 
         for (String[] dayStat : dayStats)
         {
-            if (dayStat.length < Constants.STOCKHISTORY_COLUMNS)
+            try
             {
-                continue;
+                if (dayStat.length < Constants.STOCKHISTORY_COLUMNS)
+                {
+                    continue;
+                }
+
+                date = Constants.DATETIME_FORMATTER.parseDateTime(dayStat[Constants.DATETIME_INDEX]);
+                closingPrice = Double.valueOf(dayStat[Constants.CLOSING_PRICE_INDEX]);
+
+                stockPrices.add(new StockPrice(date.getMillis(), closingPrice));
             }
-
-            date = Constants.DATETIME_FORMATTER.parseDateTime(dayStat[Constants.DATETIME_INDEX]);
-            closingPrice = Double.valueOf(dayStat[Constants.CLOSING_PRICE_INDEX]);
-
-            stockPrices.add(new StockPrice(date.getMillis(), closingPrice));
+            catch (Exception e)
+            {
+                log.error("Skipping record: " + Arrays.asList(dayStat));
+            }
         }
 
         Pair<TreeMap<Long, Double>, TreeMap<Long, Double>> stockTrends =

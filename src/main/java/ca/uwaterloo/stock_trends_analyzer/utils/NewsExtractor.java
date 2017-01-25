@@ -46,7 +46,7 @@ public class NewsExtractor
     {
         List<String> articleHeadlines = new ArrayList<>();
 
-        Thread.sleep(ThreadLocalRandom.current().nextInt(180000, 300000));
+        Thread.sleep(ThreadLocalRandom.current().nextInt(90000, 180000));
 
         try
         {
@@ -157,16 +157,19 @@ public class NewsExtractor
                     }
                 }
 
-                try
+                if (pagesToExplore > 1)
                 {
-                    WebElement nextPageButton =
-                        new WebDriverWait(driver, TIMEOUT_SECONDS).
-                            until(ExpectedConditions.presenceOfElementLocated(By.id("pnnext")));
-                    nextPageButton.click();
-                }
-                catch (Exception e)
-                {
-                    log.error("Failed to trace the page next button", e);
+                    try
+                    {
+                        WebElement nextPageButton =
+                            new WebDriverWait(driver, TIMEOUT_SECONDS).
+                                until(ExpectedConditions.presenceOfElementLocated(By.id("pnnext")));
+                        nextPageButton.click();
+                    }
+                    catch (Exception e)
+                    {
+                        log.error("Failed to trace the page next button", e);
+                    }
                 }
 
                 --pagesToExplore;
