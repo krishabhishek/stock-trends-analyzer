@@ -14,7 +14,7 @@ public class Constants
     public static final Integer DEFAULT_NUM_PAGES_PARSED = 1;
 
     // File IO Semantics
-    public static final String STOCKHISTORY_FILE_PREFIX = "STOCK_HISTORY_";
+    public static final String STOCKHISTORY_FILE_PREFIX = "/STOCK_HISTORY_";
     public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
     public static final Integer DATETIME_INDEX = 0;
     public static final Integer CLOSING_PRICE_INDEX = 6;
@@ -42,9 +42,4 @@ public class Constants
         "&e=" + END_DAY_PLACEHOLDER +
         "&f=" + END_YEAR_PLACEHOLDER +
         "&g=d&ignore=.csv";
-
-    // Financial news APi
-    public static final String GUARDIAN_API_KEY = "f70ba1d2-355e-41a2-8ef9-7d74f7f88acd";
-    public static final String NEWS_ENDPOINT = "https://content.guardianapis.com/search";
-    public static final String DEFAULT_ENCODING = "UTF-8";
 }
