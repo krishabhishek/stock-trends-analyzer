@@ -13,9 +13,9 @@ import java.util.Comparator;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StockPrice
 {
+    private static Comparator<StockPrice> pricePointComparator;
     Long timestamp;
     Double closingPrice;
-    private static Comparator<StockPrice> pricePointComparator;
 
     public static Comparator<StockPrice> getPricePointComparator()
     {

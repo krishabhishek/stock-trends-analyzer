@@ -18,15 +18,15 @@ public class TestPeriodSearch
         String organizationName = "Apple Inc.";
         String chromeDriverPath = "/home/v2john/Tools/chromedriver";
 
-        NewsExtractor newsExtractor = new NewsExtractor(chromeDriverPath);
-        List<String> headlines =  newsExtractor.getHeadlines(
+        NewsExtractor.initialize(chromeDriverPath);
+        List<String> headlines = NewsExtractor.getHeadlines(
             organizationName,
             Constants.DATETIME_FORMATTER.parseDateTime("2015-01-01"),
             Constants.DATETIME_FORMATTER.parseDateTime("2015-06-30"),
             1
         );
 
-        newsExtractor.quitDriver();
+        NewsExtractor.destroyInstance();
 
         System.out.println(Constants.MAPPER.writeValueAsString(headlines));
     }

@@ -20,41 +20,31 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class NewsExtractor
 {
-    private static Logger log = LogManager.getLogger(NewsExtractor.class);
-
     private static final String WEB_DRIVER_PROPERTY = "webdriver.chrome.driver";
     private static final String SEARCH_ENGINE = "https://news.google.com/news/advanced_news_search";
     private static final Long TIMEOUT_SECONDS = 10L;
     private static final DateTimeFormatter GOOGLE_FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
-    private Boolean firstAccess = true;
+    private static Logger log = LogManager.getLogger(NewsExtractor.class);
+    private static WebDriver driver = null;
 
-    private WebDriver driver = null;
-
-    public NewsExtractor(String chromeDriverPath)
+    public static void initialize(String chromeDriverPath)
         throws InternalAppError
     {
         System.setProperty(WEB_DRIVER_PROPERTY, chromeDriverPath);
         driver = new ChromeDriver();
     }
 
-    public void quitDriver()
+    public static void destroyInstance()
     {
         driver.quit();
+        driver = null;
     }
 
-    public List<String> getHeadlines(String searchString, DateTime startTime, DateTime endTime, Integer pagesToExplore)
+    public static List<String> getHeadlines(String searchString, DateTime startTime, DateTime endTime,
+                                            Integer pagesToExplore)
         throws InterruptedException
     {
         List<String> articleHeadlines = new ArrayList<>();
-
-        if (firstAccess)
-        {
-            firstAccess = false;
-        }
-        else
-        {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(90000, 180000));
-        }
 
         try
         {
@@ -127,8 +117,7 @@ public class NewsExtractor
                                 By.cssSelector(".l._HId"))
                             );
                     headlineElements.addAll(largeHeadlineElements);
-                }
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     log.error("Failed for large elements ", e);
                 }
@@ -141,8 +130,7 @@ public class NewsExtractor
                                 By.cssSelector("._sQb"))
                             );
                     headlineElements.addAll(smallHeadlineElements);
-                }
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     log.error("Failed for small elements", e);
                 }
@@ -153,13 +141,12 @@ public class NewsExtractor
                     {
                         String headline = element.getText();
 
-                        if(StringUtils.isBlank(headline) || headline.contains("...") ||
+                        if (StringUtils.isBlank(headline) || headline.contains("...") ||
                             !headline.contains(searchString))
                             continue;
 
                         articleHeadlines.add(headline);
-                    }
-                    catch (Exception e)
+                    } catch (Exception e)
                     {
                         log.error("Element add error", e);
                     }
@@ -173,8 +160,7 @@ public class NewsExtractor
                             new WebDriverWait(driver, TIMEOUT_SECONDS).
                                 until(ExpectedConditions.presenceOfElementLocated(By.id("pnnext")));
                         nextPageButton.click();
-                    }
-                    catch (Exception e)
+                    } catch (Exception e)
                     {
                         log.error("Failed to trace the page next button", e);
                     }
@@ -182,8 +168,7 @@ public class NewsExtractor
 
                 --pagesToExplore;
             }
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             log.error("Exception while processing URL extractor for string " + searchString);
             log.error(e);

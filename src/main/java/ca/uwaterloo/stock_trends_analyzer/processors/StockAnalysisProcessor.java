@@ -2,11 +2,13 @@ package ca.uwaterloo.stock_trends_analyzer.processors;
 
 import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
-import ca.uwaterloo.stock_trends_analyzer.beans.LabeledHeadline;
 import ca.uwaterloo.stock_trends_analyzer.beans.StockPrice;
+import ca.uwaterloo.stock_trends_analyzer.beans.Trend;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
 import ca.uwaterloo.stock_trends_analyzer.exceptions.InternalAppError;
-import ca.uwaterloo.stock_trends_analyzer.utils.*;
+import ca.uwaterloo.stock_trends_analyzer.utils.Options;
+import ca.uwaterloo.stock_trends_analyzer.utils.StatisticalInferenceHelper;
+import ca.uwaterloo.stock_trends_analyzer.utils.StockQueryHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -36,18 +38,18 @@ public class StockAnalysisProcessor extends Processor
             throw new InternalAppError("No Stock History files to examine");
         }
 
-        NewsExtractor newsExtractor = new NewsExtractor(options.getAppConfig().getChromeDriverPath());
         for (File stockHistoryFile : stockHistoryFiles)
         {
             if (stockHistoryFile.isFile())
             {
-                processCompany(stockHistoryFile.getAbsolutePath(), newsExtractor, options);
+                processCompany(stockHistoryFile.getAbsolutePath(), options);
             }
         }
-        newsExtractor.quitDriver(); 
+
+        log.info("StockAnalysisProcessor concluded");
     }
 
-    private void processCompany(String companyStockHistoryFilePath, NewsExtractor newsExtractor, Options options)
+    private void processCompany(String companyStockHistoryFilePath, Options options)
         throws InternalAppError, IOException, InterruptedException
     {
 
@@ -87,47 +89,13 @@ public class StockAnalysisProcessor extends Processor
                 closingPrice = Double.valueOf(dayStat[Constants.CLOSING_PRICE_INDEX]);
 
                 stockPrices.add(new StockPrice(date.getMillis(), closingPrice));
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 log.error("Skipping record: " + Arrays.asList(dayStat));
             }
         }
 
-        Pair<TreeMap<Long, Double>, TreeMap<Long, Double>> stockTrends =
-            StatisticalInferenceHelper.identifyDownwardSpirals(stockPrices);
-
-        TreeMap<Long, Double> negativeTrends = stockTrends.getFirst();
-        TreeMap<Long, Double> positiveTrends = stockTrends.getSecond();
-
-        List<Long> negativeTrendStartInstants = new ArrayList<>(negativeTrends.keySet());
-        List<Long> positiveTrendStartInstants = new ArrayList<>(positiveTrends.keySet());
-
-        Set<LabeledHeadline> labeledSentences = new HashSet<>();
-
-        for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < negativeTrendStartInstants.size(); i++)
-        {
-            newsExtractor.getHeadlines(
-                companyName,
-                new DateTime(negativeTrendStartInstants.get(i)),
-                new DateTime(negativeTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
-                options.getNumberOfPagesToParse()
-            ).forEach(sentence -> labeledSentences.add(new LabeledHeadline("negative", companyName, sentence)));
-        }
-
-        for (int i = 0; i < Constants.TIME_PERIODS_TO_CONSIDER && i < positiveTrendStartInstants.size(); i++)
-        {
-            newsExtractor.getHeadlines(
-                companyName,
-                new DateTime(positiveTrendStartInstants.get(i)),
-                new DateTime(positiveTrendStartInstants.get(i)).plusMonths(Constants.NUM_MONTHS_REGRESS),
-                options.getNumberOfPagesToParse()
-            ).forEach(sentence -> labeledSentences.add(new LabeledHeadline("positive", companyName, sentence)));
-        }
-
-        log.info("Writing news to file");
-        FileHelper.writeNewsToFile(new File(options.getOutputFile()), labeledSentences);
-
-        log.info("StockAnalysisProcessor concluded");
+        Set<Trend> stockTrends = StatisticalInferenceHelper.identifyDownwardSpirals(stockPrices);
+        log.info(stockTrends);
     }
 }

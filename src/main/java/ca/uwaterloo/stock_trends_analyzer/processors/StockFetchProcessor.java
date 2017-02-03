@@ -21,7 +21,8 @@ public class StockFetchProcessor extends Processor
         log.info("StockFetchProcessor begun");
 
         Options options = Options.getInstance();
-        try (Stream<String> stream = Files.lines(Paths.get(options.getSymbolsFilePath()))) {
+        try (Stream<String> stream = Files.lines(Paths.get(options.getSymbolsFilePath())))
+        {
             stream.forEach(
                 line ->
                 {
@@ -31,10 +32,10 @@ public class StockFetchProcessor extends Processor
                         StockQueryHelper.getStockHistory(
                             line, options.getStartDate().getMonthOfYear() - 1,
                             options.getStartDate().getDayOfMonth(), options.getStartDate().getYear(),
-                            options.getEndDate().getMonthOfYear() - 1, options.getEndDate().getDayOfMonth(),
+                            options.getEndDate().getMonthOfYear() - 1,
+                            options.getEndDate().getDayOfMonth(),
                             options.getEndDate().getYear(), options.getOutputDirectory());
-                    }
-                    catch (IOException e)
+                    } catch (IOException e)
                     {
                         String msg = "IOException while reading symbols file";
                         log.error(msg, e);

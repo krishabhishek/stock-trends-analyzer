@@ -2,6 +2,7 @@ package ca.uwaterloo.stock_trends_analyzer.utils;
 
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -10,7 +11,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 public class StockQueryHelper
@@ -39,14 +41,7 @@ public class StockQueryHelper
         CloseableHttpResponse response = httpclient.execute(httpGet);
 
         String filepath = outputDirectory + Constants.STOCKHISTORY_FILE_PREFIX + stockSymbol;
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filepath));
-
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            bufferedWriter.write(line);
-            bufferedWriter.newLine();
-        }
+        FileUtils.copyInputStreamToFile(response.getEntity().getContent(), new File(filepath));
     }
 
     public static String getCompanyName(String stockHistoryFilePath, String mappingFilePath)
@@ -55,7 +50,9 @@ public class StockQueryHelper
         String stockSymbol = stockHistoryFilePath.split(Constants.STOCKHISTORY_FILE_PREFIX)[1];
 
         Map<String, String> stockSymbolMap =
-            Constants.MAPPER.readValue(new File(mappingFilePath), new TypeReference<Map<String, String>>(){});
+            Constants.MAPPER.readValue(new File(mappingFilePath), new TypeReference<Map<String, String>>()
+            {
+            });
 
         return stockSymbolMap.get(stockSymbol);
     }

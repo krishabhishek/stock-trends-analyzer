@@ -1,59 +1,63 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
 import ca.uwaterloo.stock_trends_analyzer.beans.StockPrice;
+import ca.uwaterloo.stock_trends_analyzer.beans.Trend;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
+import ca.uwaterloo.stock_trends_analyzer.enums.Sentiment;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
-import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class StatisticalInferenceHelper
 {
     private static Logger log = LogManager.getLogger(StatisticalInferenceHelper.class);
 
-    public static Pair<TreeMap<Long, Double>, TreeMap<Long, Double>> identifyDownwardSpirals(List<StockPrice> stockPrices)
+    public static Set<Trend> identifyDownwardSpirals(List<StockPrice> stockPrices)
     {
-        TreeMap<Long, Double> declineStartInstants = new TreeMap<>();
-        TreeMap<Long, Double> climbStartInstants = new TreeMap<>(Collections.reverseOrder());
+        Set<Trend> trendSet = new HashSet<>();
 
-        Comparator<StockPrice> pricePointComparator = StockPrice.getPricePointComparator();
-        stockPrices.sort(pricePointComparator);
-
+        log.info(stockPrices.size() + " entries to analyze");
         for (int i = 0; i < stockPrices.size(); i++)
         {
-            Long currentInstant = stockPrices.get(i).getTimestamp();
+            stockPrices.sort(StockPrice.getPricePointComparator());
 
-            DateTime endOfPeriod = new DateTime(currentInstant).plusMonths(Constants.NUM_MONTHS_REGRESS);
+            DateTime startDate = new DateTime(stockPrices.get(i).getTimestamp());
+            DateTime endDate = startDate.plusMonths(Constants.NUM_MONTHS_REGRESS);
 
-            SimpleRegression regression = new SimpleRegression();
-            for (int j = i; j < stockPrices.size(); j++)
+            if (DateTime.now().minusMonths(Constants.NUM_MONTHS_REGRESS).isBefore(stockPrices.get(i).getTimestamp()))
             {
-                DateTime timestamp = new DateTime(stockPrices.get(j).getTimestamp());
-                if (timestamp.isAfter(endOfPeriod) && endOfPeriod.isAfter(DateTime.now()))
-                {
-                    break;
-                }
-                regression.addData(stockPrices.get(j).getTimestamp(), stockPrices.get(j).getClosingPrice());
-            }
-
-            if (regression.getN() < Constants.MINIMUM_DATAPOINTS_REGRESSION || Double.isNaN(regression.getSlope()))
-            {
-                log.error("Skipping for instant " + currentInstant + ". Insufficient model data");
                 continue;
             }
+            log.debug("startDate: " + startDate);
 
-            if (regression.getSlope() < 0)
+            SimpleRegression regression = new SimpleRegression();
+            regression.addData(stockPrices.get(i).getTimestamp(), stockPrices.get(i).getClosingPrice());
+            for (int j = 0; j < stockPrices.size() - i; j++)
             {
-                declineStartInstants.put(currentInstant, regression.getSlope());
-            } else
+                DateTime currentDate = new DateTime(stockPrices.get(j).getTimestamp());
+                if (currentDate.isBefore(endDate))
+                {
+                    regression.addData(stockPrices.get(j).getTimestamp(), stockPrices.get(j).getClosingPrice());
+                }
+            }
+
+            if (regression.getN() > Constants.MINIMUM_DATAPOINTS_REGRESSION)
             {
-                climbStartInstants.put(currentInstant, regression.getSlope());
+                Double slope = regression.getSlope();
+                Sentiment sentiment = slope > 0 ? Sentiment.POSITIVE : Sentiment.NEGATIVE;
+                trendSet.add(new Trend(sentiment, startDate.toDate(), endDate.toDate(), slope));
+            }
+            else
+            {
+                log.debug("Insufficient data points " + regression.getN());
             }
         }
 
-        return new Pair<>(declineStartInstants, climbStartInstants);
+        return trendSet;
     }
 }

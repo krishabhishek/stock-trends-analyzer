@@ -1,6 +1,7 @@
 package ca.uwaterloo.stock_trends_analyzer;
 
 import ca.uwaterloo.stock_trends_analyzer.exceptions.InternalAppError;
+import ca.uwaterloo.stock_trends_analyzer.processors.NewsMiningProcessor;
 import ca.uwaterloo.stock_trends_analyzer.processors.Processor;
 import ca.uwaterloo.stock_trends_analyzer.processors.StockAnalysisProcessor;
 import ca.uwaterloo.stock_trends_analyzer.processors.StockFetchProcessor;
@@ -8,6 +9,7 @@ import ca.uwaterloo.stock_trends_analyzer.utils.Options;
 
 public class StockTrendsAnalyzer
 {
+
     public static void main(String[] args)
     {
         try
@@ -15,8 +17,7 @@ public class StockTrendsAnalyzer
             Options.initializeInstance(args);
             Processor processor = getProcessor();
             processor.process();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             System.err.println("Application terminated");
             e.printStackTrace();
@@ -28,13 +29,18 @@ public class StockTrendsAnalyzer
         throws InternalAppError
     {
         Processor processor = null;
-        if (Options.getInstance().getFetch())
+
+        switch (Options.getInstance().getRunMode())
         {
-            processor = new StockFetchProcessor();
-        }
-        else if (Options.getInstance().getAnalyze())
-        {
-            processor = new StockAnalysisProcessor();
+            case FETCH_STOCK_HISTORY:
+                processor = new StockFetchProcessor();
+                break;
+            case DUMP_ANALYSIS:
+                processor = new StockAnalysisProcessor();
+                break;
+            case MINE_NEWS:
+                processor = new NewsMiningProcessor();
+                break;
         }
 
         return processor;

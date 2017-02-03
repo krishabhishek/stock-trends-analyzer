@@ -1,4 +1,4 @@
 {
-    "appName": "StockTrendsAnalyzer",
-    "chromeDriverPath": "/home/v2john/Tools/chromedriver"
+  "appName": "StockTrendsAnalyzer",
+  "chromeDriverPath": "/home/v2john/Tools/chromedriver"
 }

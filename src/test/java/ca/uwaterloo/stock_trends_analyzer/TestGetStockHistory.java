@@ -12,14 +12,14 @@ public class TestGetStockHistory
         throws IOException
     {
         StockQueryHelper.getStockHistory(
-            "GOOG",
+            "FIT",
             0,
             1,
-            2015,
+            2011,
             11,
             31,
             2016,
-            "/home/v2john/"
+            "/tmp/"
         );
         System.out.println("Completed");
     }

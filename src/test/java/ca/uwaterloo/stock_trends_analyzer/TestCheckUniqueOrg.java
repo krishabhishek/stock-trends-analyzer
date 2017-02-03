@@ -15,7 +15,7 @@ public class TestCheckUniqueOrg
         NERHelper nerHelper = new NERHelper();
 
         String sentence = "Microsoft Inc. seek exception program on Trump immigration orders, and so does Apple Inc";
-        List<String> orgs = nerHelper.extractEntities(sentence,"corpus-1", "1");
+        List<String> orgs = nerHelper.extractEntities(sentence, "corpus-1", "1");
 
         System.out.println("The orgs are " + orgs);
     }

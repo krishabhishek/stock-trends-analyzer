@@ -18,11 +18,12 @@ public class FileHelper
     public static void writeNewsToFile(File outputFile, Set<LabeledHeadline> labeledHeadlines)
         throws IOException
     {
-        if (!outputFile.exists()) {
+        if (!outputFile.exists())
+        {
             outputFile.createNewFile();
         }
 
-        FileWriter fileWriter = new FileWriter(outputFile,true);
+        FileWriter fileWriter = new FileWriter(outputFile, true);
         BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
         labeledHeadlines.forEach(headline ->
@@ -31,8 +32,7 @@ public class FileHelper
                 {
                     bufferedWriter.write(Constants.MAPPER.writeValueAsString(headline));
                     bufferedWriter.newLine();
-                }
-                catch (IOException e)
+                } catch (IOException e)
                 {
                     log.error("Skipped adding entry to file: " + headline);
                 }

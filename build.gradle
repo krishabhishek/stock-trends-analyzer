@@ -29,7 +29,7 @@ dependencies {
     compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
     compile group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
     compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.0.1'
-    compile group: 'edu.illinois.cs.cogcomp', name: 'illinois-ner', version:'3.0.80'
+    compile group: 'edu.illinois.cs.cogcomp', name: 'illinois-ner', version: '3.0.80'
     compile group: 'junit', name: 'junit', version: '4.12'
 }
 
