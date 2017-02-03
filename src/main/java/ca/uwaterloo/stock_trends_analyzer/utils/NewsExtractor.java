@@ -26,13 +26,14 @@ public class NewsExtractor
     private static final String SEARCH_ENGINE = "https://news.google.com/news/advanced_news_search";
     private static final Long TIMEOUT_SECONDS = 10L;
     private static final DateTimeFormatter GOOGLE_FORMATTER = DateTimeFormat.forPattern("MM/dd/yyyy");
+    private Boolean firstAccess = true;
 
     private WebDriver driver = null;
 
-    public NewsExtractor()
+    public NewsExtractor(String chromeDriverPath)
         throws InternalAppError
     {
-        System.setProperty(WEB_DRIVER_PROPERTY, Options.getInstance().getAppConfig().getChromeDriverPath());
+        System.setProperty(WEB_DRIVER_PROPERTY, chromeDriverPath);
         driver = new ChromeDriver();
     }
 
@@ -46,7 +47,14 @@ public class NewsExtractor
     {
         List<String> articleHeadlines = new ArrayList<>();
 
-        Thread.sleep(ThreadLocalRandom.current().nextInt(90000, 180000));
+        if (firstAccess)
+        {
+            firstAccess = false;
+        }
+        else
+        {
+            Thread.sleep(ThreadLocalRandom.current().nextInt(90000, 180000));
+        }
 
         try
         {

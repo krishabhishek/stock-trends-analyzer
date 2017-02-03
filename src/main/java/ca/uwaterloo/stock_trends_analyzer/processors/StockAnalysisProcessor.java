@@ -36,7 +36,7 @@ public class StockAnalysisProcessor extends Processor
             throw new InternalAppError("No Stock History files to examine");
         }
 
-        NewsExtractor newsExtractor = new NewsExtractor();
+        NewsExtractor newsExtractor = new NewsExtractor(options.getAppConfig().getChromeDriverPath());
         for (File stockHistoryFile : stockHistoryFiles)
         {
             if (stockHistoryFile.isFile())
