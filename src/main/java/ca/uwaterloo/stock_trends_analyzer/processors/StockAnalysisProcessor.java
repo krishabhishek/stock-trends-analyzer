@@ -2,6 +2,7 @@ package ca.uwaterloo.stock_trends_analyzer.processors;
 
 import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
+import ca.uwaterloo.stock_trends_analyzer.beans.Organization;
 import ca.uwaterloo.stock_trends_analyzer.beans.StockPrice;
 import ca.uwaterloo.stock_trends_analyzer.beans.Trend;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
@@ -10,15 +11,15 @@ import ca.uwaterloo.stock_trends_analyzer.utils.Options;
 import ca.uwaterloo.stock_trends_analyzer.utils.StatisticalInferenceHelper;
 import ca.uwaterloo.stock_trends_analyzer.utils.StockQueryHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public class StockAnalysisProcessor extends Processor
 {
@@ -52,18 +53,17 @@ public class StockAnalysisProcessor extends Processor
     private void processCompany(String companyStockHistoryFilePath, Options options)
         throws InternalAppError, IOException, InterruptedException
     {
-
-        String companyName = StockQueryHelper.getCompanyName(
+        Organization organization = StockQueryHelper.getCompanyName(
             companyStockHistoryFilePath,
             options.getStockSymbolMappingFilePath()
         );
-        if (StringUtils.isBlank(companyName))
+        if (StringUtils.isBlank(organization.getOrgName()))
         {
-            log.error("Company name not found in mapping file");
+            log.error("Organization name not found in mapping file");
             return;
         }
 
-        log.info("Working on " + companyName);
+        log.info("Working on " + organization.getOrgName());
 
         CSVReader reader =
             new CSVReader(
@@ -96,6 +96,31 @@ public class StockAnalysisProcessor extends Processor
         }
 
         Set<Trend> stockTrends = StatisticalInferenceHelper.identifyDownwardSpirals(stockPrices);
-        log.info(stockTrends);
+        writeTrendsToFile(stockTrends, options.getOutputDirectory(), organization);
+    }
+
+    private void writeTrendsToFile(Set<Trend> stockTrends, String outputDirectory, Organization organization)
+        throws IOException
+    {
+        FileWriter fileWriter =
+            new FileWriter(outputDirectory + Constants.STOCKTREND_FILE_PREFIX + organization.getStockSymbol());
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+        stockTrends.forEach(
+            trend ->
+            {
+                try
+                {
+                    bufferedWriter.write(Constants.MAPPER.writeValueAsString(trend));
+                    bufferedWriter.newLine();
+                } catch (IOException e)
+                {
+                    log.debug("Skipping error trend");
+                }
+            }
+        );
+
+        bufferedWriter.close();
+        fileWriter.close();
     }
 }

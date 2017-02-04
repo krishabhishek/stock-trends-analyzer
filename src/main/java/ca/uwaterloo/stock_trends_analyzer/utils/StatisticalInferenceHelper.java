@@ -21,7 +21,7 @@ public class StatisticalInferenceHelper
     {
         Set<Trend> trendSet = new HashSet<>();
 
-        log.info(stockPrices.size() + " entries to analyze");
+        log.debug(stockPrices.size() + " entries to analyze");
         for (int i = 0; i < stockPrices.size(); i++)
         {
             stockPrices.sort(StockPrice.getPricePointComparator());

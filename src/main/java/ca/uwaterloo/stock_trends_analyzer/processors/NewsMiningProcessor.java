@@ -58,7 +58,7 @@ public class NewsMiningProcessor extends Processor
 //        );
 //        if (StringUtils.isBlank(companyName))
 //        {
-//            log.error("Company name not found in mapping file");
+//            log.error("Organization name not found in mapping file");
 //            return;
 //        }
 //

@@ -1,5 +1,6 @@
 package ca.uwaterloo.stock_trends_analyzer.utils;
 
+import ca.uwaterloo.stock_trends_analyzer.beans.Organization;
 import ca.uwaterloo.stock_trends_analyzer.constants.Constants;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.io.FileUtils;
@@ -44,16 +45,14 @@ public class StockQueryHelper
         FileUtils.copyInputStreamToFile(response.getEntity().getContent(), new File(filepath));
     }
 
-    public static String getCompanyName(String stockHistoryFilePath, String mappingFilePath)
+    public static Organization getCompanyName(String stockHistoryFilePath, String mappingFilePath)
         throws IOException
     {
         String stockSymbol = stockHistoryFilePath.split(Constants.STOCKHISTORY_FILE_PREFIX)[1];
 
         Map<String, String> stockSymbolMap =
-            Constants.MAPPER.readValue(new File(mappingFilePath), new TypeReference<Map<String, String>>()
-            {
-            });
+            Constants.MAPPER.readValue(new File(mappingFilePath), new TypeReference<Map<String, String>>(){});
 
-        return stockSymbolMap.get(stockSymbol);
+        return new Organization(stockSymbolMap.get(stockSymbol), stockSymbol);
     }
 }
