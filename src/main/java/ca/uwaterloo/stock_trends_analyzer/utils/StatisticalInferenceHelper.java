@@ -50,7 +50,7 @@ public class StatisticalInferenceHelper
             {
                 Double slope = regression.getSlope();
                 Sentiment sentiment = slope > 0 ? Sentiment.POSITIVE : Sentiment.NEGATIVE;
-                trendSet.add(new Trend(sentiment, startDate.toDate(), endDate.toDate(), slope));
+                trendSet.add(new Trend(sentiment, startDate, endDate, slope));
             }
             else
             {

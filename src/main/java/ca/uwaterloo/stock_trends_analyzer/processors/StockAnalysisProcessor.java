@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,8 +60,7 @@ public class StockAnalysisProcessor extends Processor
         );
         if (StringUtils.isBlank(organization.getOrgName()))
         {
-            log.error("Organization name not found in mapping file");
-            return;
+            log.error("Stock Symbol not found in mapping file: " + organization.getStockSymbol());
         }
 
         log.info("Working on " + organization.getOrgName());
@@ -103,15 +103,20 @@ public class StockAnalysisProcessor extends Processor
         throws IOException
     {
         FileWriter fileWriter =
-            new FileWriter(outputDirectory + Constants.STOCKTREND_FILE_PREFIX + organization.getStockSymbol());
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            new FileWriter(
+                outputDirectory + Constants.STOCKTREND_FILE_PREFIX +
+                organization.getStockSymbol() + ".tsv"
+            );
 
+        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        bufferedWriter.write(Trend.getTSVHeader());
+        bufferedWriter.newLine();
         stockTrends.forEach(
             trend ->
             {
                 try
                 {
-                    bufferedWriter.write(Constants.MAPPER.writeValueAsString(trend));
+                    bufferedWriter.write(trend.formatToTSV());
                     bufferedWriter.newLine();
                 } catch (IOException e)
                 {
