@@ -34,7 +34,8 @@ public class StockFetchProcessor extends Processor
                             options.getStartDate().getDayOfMonth(), options.getStartDate().getYear(),
                             options.getEndDate().getMonthOfYear() - 1,
                             options.getEndDate().getDayOfMonth(),
-                            options.getEndDate().getYear(), options.getOutputDirectory());
+                            options.getEndDate().getYear(), options.getOutputDirectory()
+                        );
                     } catch (IOException e)
                     {
                         String msg = "IOException while reading symbols file";

@@ -19,7 +19,8 @@ public class Constants
 
     // Slope detection
     public static final Integer NUM_MONTHS_REGRESS = 12;
-    public static final Integer MINIMUM_DATAPOINTS_REGRESSION = 300;
+    public static final Integer NUM_DAYS_REGRESS_MINI = 30;
+    public static final Integer MINIMUM_DATAPOINTS_REGRESSION = 150;
     public static final Integer TIME_PERIODS_TO_CONSIDER = 1;
 
     // Stock history API call

@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,7 +95,11 @@ public class StockAnalysisProcessor extends Processor
         }
 
         Set<Trend> stockTrends = StatisticalInferenceHelper.identifyDownwardSpirals(stockPrices);
-        writeTrendsToFile(stockTrends, options.getOutputDirectory(), organization);
+
+        if (!stockTrends.isEmpty())
+        {
+            writeTrendsToFile(stockTrends, options.getOutputDirectory(), organization);
+        }
     }
 
     private void writeTrendsToFile(Set<Trend> stockTrends, String outputDirectory, Organization organization)

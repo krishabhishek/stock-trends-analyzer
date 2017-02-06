@@ -41,14 +41,14 @@ public class StockQueryHelper
         HttpGet httpGet = new HttpGet(endpoint);
         CloseableHttpResponse response = httpclient.execute(httpGet);
 
-        String filepath = outputDirectory + Constants.STOCKHISTORY_FILE_PREFIX + stockSymbol;
+        String filepath = outputDirectory + Constants.STOCKHISTORY_FILE_PREFIX + stockSymbol + ".csv";
         FileUtils.copyInputStreamToFile(response.getEntity().getContent(), new File(filepath));
     }
 
     public static Organization getCompanyName(String stockHistoryFilePath, String mappingFilePath)
         throws IOException
     {
-        String stockSymbol = stockHistoryFilePath.split(Constants.STOCKHISTORY_FILE_PREFIX)[1];
+        String stockSymbol = stockHistoryFilePath.replace(".csv", "").split(Constants.STOCKHISTORY_FILE_PREFIX)[1];
 
         Map<String, String> stockSymbolMap =
             Constants.MAPPER.readValue(new File(mappingFilePath), new TypeReference<Map<String, String>>(){});
