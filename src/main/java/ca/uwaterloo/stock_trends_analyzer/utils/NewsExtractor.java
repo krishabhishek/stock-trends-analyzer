@@ -45,6 +45,7 @@ public class NewsExtractor
         throws InterruptedException
     {
         List<String> articleHeadlines = new ArrayList<>();
+        List<String> truncatedHeadlineURLs = new ArrayList<>();
 
         try
         {
@@ -117,7 +118,8 @@ public class NewsExtractor
                                 By.cssSelector(".l._HId"))
                             );
                     headlineElements.addAll(largeHeadlineElements);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     log.error("Failed for large elements ", e);
                 }
@@ -130,27 +132,33 @@ public class NewsExtractor
                                 By.cssSelector("._sQb"))
                             );
                     headlineElements.addAll(smallHeadlineElements);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     log.error("Failed for small elements", e);
                 }
 
-                for (WebElement element : headlineElements)
-                {
-                    try
-                    {
-                        String headline = element.getText();
+                headlineElements.forEach(
+                    element -> {
+                        try
+                        {
+                            String headline = element.getText();
 
-                        if (StringUtils.isBlank(headline) || headline.contains("...") ||
-                            !headline.contains(searchString))
-                            continue;
+                            if (headline.contains("..."))
+                            {
+                                String url = element.getAttribute("href");
+                                truncatedHeadlineURLs.add(url);
+                                return;
+                            }
 
-                        articleHeadlines.add(headline);
-                    } catch (Exception e)
-                    {
-                        log.error("Element add error", e);
+                            articleHeadlines.add(headline);
+                        }
+                        catch (Exception e)
+                        {
+                            log.error("Element add error", e);
+                        }
                     }
-                }
+                );
 
                 if (pagesToExplore > 1)
                 {
@@ -160,7 +168,8 @@ public class NewsExtractor
                             new WebDriverWait(driver, TIMEOUT_SECONDS).
                                 until(ExpectedConditions.presenceOfElementLocated(By.id("pnnext")));
                         nextPageButton.click();
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         log.error("Failed to trace the page next button", e);
                     }
@@ -168,12 +177,34 @@ public class NewsExtractor
 
                 --pagesToExplore;
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             log.error("Exception while processing URL extractor for string " + searchString);
             log.error(e);
         }
 
+        List<String> expandedHeadlines = expandUrlsToHeadlines(truncatedHeadlineURLs);
+        articleHeadlines.addAll(expandedHeadlines);
+
+        articleHeadlines.removeIf(
+            headline -> !headline.contains(searchString) || StringUtils.isBlank(headline)
+        );
+
         return articleHeadlines;
+    }
+
+    private static List<String> expandUrlsToHeadlines(List<String> truncatedHeadlineURLs)
+    {
+        List<String> headlines = new ArrayList<>();
+
+        truncatedHeadlineURLs.forEach(
+            url -> {
+                driver.get(url);
+                headlines.add(driver.getTitle());
+            }
+        );
+
+        return headlines;
     }
 }

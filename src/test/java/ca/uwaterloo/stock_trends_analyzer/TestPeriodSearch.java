@@ -28,6 +28,7 @@ public class TestPeriodSearch
 
         NewsExtractor.destroyInstance();
 
-        System.out.println(Constants.MAPPER.writeValueAsString(headlines));
+        System.out.println(headlines.size() + " headlines parsed");
+        headlines.forEach(System.out::println);
     }
 }
